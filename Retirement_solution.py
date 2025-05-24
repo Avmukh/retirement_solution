@@ -1,15 +1,32 @@
-import math
+import streamlit as st
+import pandas as pd
+import locale
 
+# --- Locale for INR Formatting ---
+try:
+    locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, '')  # fallback
+
+def format_inr(amount):
+    try:
+        return locale.currency(amount, grouping=True)
+    except:
+        return f"₹{amount:,.2f}"
+
+# --- Page Setup ---
+st.set_page_config(page_title="Retirement & SWP Planner", layout="centered")
+st.title("🧓 Retirement & SWP Calculator")
+
+# --- Tabs ---
+tab1, tab2 = st.tabs(["📈 Retirement Corpus", "💸 SWP Simulation"])
+
+# --- Functions ---
 def calculate_retirement_corpus(monthly_expense, years_until_retirement, inflation_rate, post_retirement_years):
-    # Calculate future monthly expense adjusted for inflation
-    future_monthly_expense = monthly_expense * ((1 + inflation_rate / 100) ** years_until_retirement)
-    # Annual expense during retirement
-    annual_expense = future_monthly_expense * 12
-    # Total retirement corpus needed
-    corpus_needed = 0
-    for year in range(post_retirement_years):
-        corpus_needed += annual_expense / ((1 + inflation_rate / 100) ** year)
-    return corpus_needed
+    future_expense = monthly_expense * ((1 + inflation_rate / 100) ** years_until_retirement)
+    annual_expense = future_expense * 12
+    corpus = sum(annual_expense / ((1 + inflation_rate / 100) ** year) for year in range(post_retirement_years))
+    return corpus
 
 def simulate_swp(corpus, swp_amount, return_rate, years):
     balance = corpus
@@ -17,47 +34,45 @@ def simulate_swp(corpus, swp_amount, return_rate, years):
     results = []
     for month in range(1, years * 12 + 1):
         interest = balance * monthly_return
-        balance += interest
-        balance -= swp_amount
+        balance += interest - swp_amount
         results.append((month, balance))
         if balance <= 0:
             break
     return results
 
-def main():
-    while True:
-        print("\n===== Retirement & SWP Calculator =====")
-        print("1. Calculate Retirement Corpus Needed")
-        print("2. Simulate SWP Plan")
-        print("3. Exit")
-        choice = input("Enter your choice: ")
+# --- Retirement Corpus ---
+with tab1:
+    st.subheader("Estimate Retirement Corpus Needed")
+    monthly_expense = st.number_input("Current Monthly Expense (INR)", value=30000.0)
+    years_until_retirement = st.number_input("Years Until Retirement", value=20)
+    inflation_rate = st.number_input("Expected Inflation Rate (%)", value=6.0)
+    post_retirement_years = st.number_input("Years in Retirement", value=25)
 
-        if choice == '1':
-            monthly_expense = float(input("Enter current monthly expense (INR): "))
-            years_until_retirement = int(input("Years left until retirement: "))
-            inflation_rate = float(input("Expected annual inflation rate (%): "))
-            post_retirement_years = int(input("Expected number of years in retirement: "))
+    if st.button("Calculate Corpus"):
+        corpus = calculate_retirement_corpus(monthly_expense, years_until_retirement, inflation_rate, post_retirement_years)
+        st.success(f"Estimated Corpus Required: {format_inr(corpus)}")
 
-            corpus = calculate_retirement_corpus(monthly_expense, years_until_retirement, inflation_rate, post_retirement_years)
-            print(f"\nEstimated Retirement Corpus Required: ₹{corpus:,.2f}")
+# --- SWP Simulation ---
+with tab2:
+    st.subheader("Simulate Monthly Withdrawal from Corpus")
+    corpus = st.number_input("Starting Corpus (INR)", value=1_00_00_000.0)
+    swp_amount = st.number_input("Monthly Withdrawal (INR)", value=40000.0)
+    return_rate = st.number_input("Annual Return Rate (%)", value=8.0)
+    years = st.number_input("Simulation Period (Years)", value=30)
 
-        elif choice == '2':
-            corpus = float(input("Enter current retirement corpus (INR): "))
-            swp_amount = float(input("Enter monthly withdrawal (SWP) amount (INR): "))
-            return_rate = float(input("Expected annual return on investment during retirement (%): "))
-            years = int(input("Number of years to simulate: "))
+    if st.button("Run SWP Simulation"):
+        data = simulate_swp(corpus, swp_amount, return_rate, int(years))
+        df = pd.DataFrame(data, columns=["Month", "Balance"])
 
-            swp_schedule = simulate_swp(corpus, swp_amount, return_rate, years)
-            for month, balance in swp_schedule:
-                print(f"Month {month}: Balance = ₹{balance:,.2f}")
-            if swp_schedule[-1][1] <= 0:
-                print("\nWarning: Your retirement corpus will be exhausted by month", swp_schedule[-1][0])
+        st.line_chart(df.set_index("Month"))
 
-        elif choice == '3':
-            print("Exiting the calculator. Goodbye!")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+        df["Year"] = ((df["Month"] - 1) // 12) + 1
+        yearly_df = df.groupby("Year")["Balance"].last().reset_index()
 
-if __name__ == "__main__":
-    main()
+        st.bar_chart(yearly_df.set_index("Year"))
+
+        if df.iloc[-1]['Balance'] <= 0:
+            st.warning(f"Corpus exhausted in month {df.iloc[-1]['Month']}.")
+
+        df["Formatted Balance"] = df["Balance"].apply(format_inr)
+        st.dataframe(df[["Month", "Formatted Balance"]])
