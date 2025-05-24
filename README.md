@@ -1,4 +1,4 @@
-# 🧓 Retirement & SWP Planner (Streamlit App)
+# 🧓 Retirement & SWP Planner (An AvMukh Project)
 
 This is a simple, interactive Streamlit app to:
 
