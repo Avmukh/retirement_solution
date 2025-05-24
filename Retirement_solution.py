@@ -76,3 +76,9 @@ with tab2:
 
         df["Formatted Balance"] = df["Balance"].apply(format_inr)
         st.dataframe(df[["Month", "Formatted Balance"]])
+
+# --- Footer ---
+st.markdown(
+    "<hr style='margin-top:40px;'><div style='text-align:center;'>Made with ❤️ by <b>Sri AvMukh (Avik Mukherjee) </b></div>",
+    unsafe_allow_html=True
+)
