@@ -44,7 +44,7 @@ with tab1:
     monthly_expense = st.number_input("Current Monthly Expense (INR)", value=30000.0)
     years_until_retirement = st.number_input("Years Until Retirement", value=20)
     inflation_rate = st.number_input("Expected Inflation Rate (%)", value=6.0)
-    post_retirement_years = st.number_input("Expected Years in Retirement", value=25)
+    post_retirement_years = st.number_input("Expected Years after Retirement", value=25)
 
     if st.button("Calculate Corpus"):
         corpus = calculate_retirement_corpus(monthly_expense, years_until_retirement, inflation_rate, post_retirement_years)
