@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 import locale
 
-# --- Locale for INR Formatting ---
+# --- Set Locale for INR Formatting ---
 try:
     locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
 except locale.Error:
-    locale.setlocale(locale.LC_ALL, '')  # fallback
+    locale.setlocale(locale.LC_ALL, '')  # Fallback
 
 def format_inr(amount):
     try:
@@ -14,19 +14,15 @@ def format_inr(amount):
     except:
         return f"₹{amount:,.2f}"
 
-# --- Page Setup ---
-st.set_page_config(page_title="Retirement & SWP Planner", layout="centered")
-st.title("🧓 Retirement & SWP Calculator")
+# --- Page Config ---
+st.title("Retirement & SWP Calculator")
 
-# --- Tabs ---
-tab1, tab2 = st.tabs(["📈 Retirement Corpus", "💸 SWP Simulation"])
-
-# --- Functions ---
+# --- Core Functions ---
 def calculate_retirement_corpus(monthly_expense, years_until_retirement, inflation_rate, post_retirement_years):
-    future_expense = monthly_expense * ((1 + inflation_rate / 100) ** years_until_retirement)
-    annual_expense = future_expense * 12
-    corpus = sum(annual_expense / ((1 + inflation_rate / 100) ** year) for year in range(post_retirement_years))
-    return corpus
+    future_monthly_expense = monthly_expense * ((1 + inflation_rate / 100) ** years_until_retirement)
+    annual_expense = future_monthly_expense * 12
+    corpus_needed = sum(annual_expense / ((1 + inflation_rate / 100) ** year) for year in range(post_retirement_years))
+    return corpus_needed
 
 def simulate_swp(corpus, swp_amount, return_rate, years):
     balance = corpus
@@ -40,39 +36,42 @@ def simulate_swp(corpus, swp_amount, return_rate, years):
             break
     return results
 
-# --- Retirement Corpus ---
+# --- Tabs ---
+tab1, tab2 = st.tabs(["Retirement Corpus", "SWP Simulation"])
+
 with tab1:
-    st.subheader("Estimate Retirement Corpus Needed")
-    monthly_expense = st.number_input("Current Monthly Expense (INR)", value=30000)
+    st.header("Retirement Corpus Estimator")
+    monthly_expense = st.number_input("Current Monthly Expense (INR)", value=30000.0)
     years_until_retirement = st.number_input("Years Until Retirement", value=20)
     inflation_rate = st.number_input("Expected Inflation Rate (%)", value=6.0)
-    post_retirement_years = st.number_input("Years after Retirement", value=25)
+    post_retirement_years = st.number_input("Expected Years in Retirement", value=25)
 
     if st.button("Calculate Corpus"):
         corpus = calculate_retirement_corpus(monthly_expense, years_until_retirement, inflation_rate, post_retirement_years)
-        st.success(f"Estimated Corpus Required: {format_inr(corpus)}")
+        st.success(f"Estimated Retirement Corpus Required: {format_inr(corpus)}")
 
-# --- SWP Simulation ---
 with tab2:
-    st.subheader("Simulate Monthly Withdrawal from Corpus")
-    corpus = st.number_input("Starting Corpus (INR)", value=1_00_00_000.)
-    swp_amount = st.number_input("Monthly Withdrawal (INR)", value=40000.)
-    return_rate = st.number_input("Annual Return Rate (%)", value=8.0)
-    years = st.number_input("Simulation Period (Years)", value=30)
+    st.header("SWP Simulator")
+    corpus = st.number_input("Retirement Corpus (INR)", value=1_00_00_000.0)
+    swp_amount = st.number_input("Monthly SWP Amount (INR)", value=40000.0)
+    return_rate = st.number_input("Expected Annual Return Rate (%)", value=8.0)
+    years = st.number_input("Years to Simulate", value=30)
 
-    if st.button("Run SWP Simulation"):
-        data = simulate_swp(corpus, swp_amount, return_rate, int(years))
-        df = pd.DataFrame(data, columns=["Month", "Balance"])
+    if st.button("Simulate SWP"):
+        results = simulate_swp(corpus, swp_amount, return_rate, int(years))
+        df = pd.DataFrame(results, columns=["Month", "Balance"])
 
+        st.write("**SWP Simulation Results**")
         st.line_chart(df.set_index("Month"))
 
         df["Year"] = ((df["Month"] - 1) // 12) + 1
         yearly_df = df.groupby("Year")["Balance"].last().reset_index()
 
+        st.write("**Year-End Balances**")
         st.bar_chart(yearly_df.set_index("Year"))
 
-        if df.iloc[-1]['Balance'] <= 0:
-            st.warning(f"Corpus exhausted in month {df.iloc[-1]['Month']}.")
+        if not df.empty and df.iloc[-1]['Balance'] <= 0:
+            st.warning(f"Corpus exhausted in month {df.iloc[-1]['Month']}")
 
         df["Formatted Balance"] = df["Balance"].apply(format_inr)
         st.dataframe(df[["Month", "Formatted Balance"]])
