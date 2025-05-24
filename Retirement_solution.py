@@ -43,10 +43,10 @@ def simulate_swp(corpus, swp_amount, return_rate, years):
 # --- Retirement Corpus ---
 with tab1:
     st.subheader("Estimate Retirement Corpus Needed")
-    monthly_expense = st.number_input("Current Monthly Expense (INR)", value=30000.0)
+    monthly_expense = st.number_input("Current Monthly Expense (INR)", value=30000)
     years_until_retirement = st.number_input("Years Until Retirement", value=20)
     inflation_rate = st.number_input("Expected Inflation Rate (%)", value=6.0)
-    post_retirement_years = st.number_input("Years in Retirement", value=25)
+    post_retirement_years = st.number_input("Years after Retirement", value=25)
 
     if st.button("Calculate Corpus"):
         corpus = calculate_retirement_corpus(monthly_expense, years_until_retirement, inflation_rate, post_retirement_years)
@@ -55,8 +55,8 @@ with tab1:
 # --- SWP Simulation ---
 with tab2:
     st.subheader("Simulate Monthly Withdrawal from Corpus")
-    corpus = st.number_input("Starting Corpus (INR)", value=1_00_00_000.0)
-    swp_amount = st.number_input("Monthly Withdrawal (INR)", value=40000.0)
+    corpus = st.number_input("Starting Corpus (INR)", value=1_00_00_000.)
+    swp_amount = st.number_input("Monthly Withdrawal (INR)", value=40000.)
     return_rate = st.number_input("Annual Return Rate (%)", value=8.0)
     years = st.number_input("Simulation Period (Years)", value=30)
 
