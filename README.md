@@ -9,11 +9,8 @@ This is a simple, interactive Streamlit app to:
 
 ---
 
-## 🚀 Live Demo
-
-You can deploy this app on [Streamlit Cloud](https://share.streamlit.io/) or run locally.
+## 🚀 not for commercial use
 
 ---
 
-## 📁 Project Structure
 
