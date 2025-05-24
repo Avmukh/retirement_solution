@@ -13,6 +13,7 @@ This is a simple, interactive Streamlit app to:
 
 ---
 ✨ Example Use Cases
+
 Planning your retirement years
 
 Testing SWP strategies post-retirement
