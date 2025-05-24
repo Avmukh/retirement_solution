@@ -9,8 +9,25 @@ This is a simple, interactive Streamlit app to:
 
 ---
 
-## 🚀 not for commercial use
+
 
 ---
+✨ Example Use Cases
+Planning your retirement years
+
+Testing SWP strategies post-retirement
+
+Understanding corpus depletion risks
+
+📃 License
+## 🚀 not for commercial use
+
+🤝 Contributions
+Pull requests welcome! If you have features like:
+
+a) SIP calculator
+b) Tax planning module
+Feel free to contribute.
+
 
 
