@@ -3,11 +3,11 @@ import pandas as pd
 from babel.numbers import format_currency
 
 # --- Helper for INR Formatting ---
-#def format_inr(amount):
- #   try:
-    #    return format_currency(amount, 'INR', locale='en_IN')
-   # except:
-      #  return f"₹{amount:,.2f}"
+def format_inr(amount):
+    try:
+      return format_currency(amount, 'INR', locale='en_IN')
+    except:
+        return f"₹{amount:,.2f}"
     
 # --- Page Config ---
 st.set_page_config(page_title="Retirement & SWP Calculator", layout="centered")
